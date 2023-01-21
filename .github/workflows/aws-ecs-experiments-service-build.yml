@@ -16,7 +16,9 @@ jobs:
       - name: Set up JDK 17
         uses: actions/setup-java@v2
         with:
+          distribution: 'corretto'
           java-version: 17
+          cache: 'maven'
 
       - name: Cache dependencies
         id: cache-deps
@@ -36,4 +38,4 @@ jobs:
           tags: ${{ env.DOCKER_REGISTRY }}/aws-ecs-experiments-service:${{ env.GITHUB_SHA }}
 
       - name: Build
-        run: mvn clean package -DskipTests=true -Pprod -pl aws-ecs-experiments-service spring-boot:build-image
+        run: mvn clean spring-boot:build-image
