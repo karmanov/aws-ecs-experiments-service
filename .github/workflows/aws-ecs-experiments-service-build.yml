@@ -3,7 +3,7 @@ name: AWS ECS Experiments Service
 on:
   push:
     branches:
-      - master
+      - main
 
 jobs:
   build:
@@ -18,20 +18,22 @@ jobs:
         with:
           java-version: 17
 
-      - name: Build with Maven
-        run: mvn clean package
-        env:
-          MAVEN_OPTS: "-Dmaven.repo.local=${GITHUB_WORKSPACE}/.m2/repository"
-
       - name: Cache dependencies
-          id: cache-deps
-          uses: actions/cache@v2
-          with:
-            path: ~/.m2
-            key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-            restore-keys: |
-              ${{ runner.os }}-maven-
-              ${{ runner.os }}-          
+        id: cache-deps
+        uses: actions/cache@v2
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+            ${{ runner.os }}-
 
-      - name: Build Docker image
-        run: mvn spring-boot:build-image -Dspring-boot.build-image.imageName=karmanov/aws-ecs-experiments-service
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          push: true
+          tags: ${{ env.DOCKER_REGISTRY }}/aws-ecs-experiments-service:${{ env.GITHUB_SHA }}
+
+      - name: Build
+        run: mvn clean package -DskipTests=true -Pprod -pl aws-ecs-experiments-service spring-boot:build-image
