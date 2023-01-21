@@ -30,12 +30,5 @@ jobs:
             ${{ runner.os }}-maven-
             ${{ runner.os }}-
 
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v2
-        with:
-          context: .
-          push: true
-          tags: karmanov/aws-ecs-experiments-service:0.0.1-SNAPSHOT
-
       - name: Build
         run: mvn clean spring-boot:build-image
