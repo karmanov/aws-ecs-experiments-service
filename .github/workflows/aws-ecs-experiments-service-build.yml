@@ -1,0 +1,37 @@
+name: AWS ECS Experiments Service
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v2
+        with:
+          java-version: 17
+
+      - name: Build with Maven
+        run: mvn clean package
+        env:
+          MAVEN_OPTS: "-Dmaven.repo.local=${GITHUB_WORKSPACE}/.m2/repository"
+
+      - name: Cache dependencies
+          id: cache-deps
+          uses: actions/cache@v2
+          with:
+            path: ~/.m2
+            key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+            restore-keys: |
+              ${{ runner.os }}-maven-
+              ${{ runner.os }}-          
+
+      - name: Build Docker image
+        run: mvn spring-boot:build-image -Dspring-boot.build-image.imageName=karmanov/aws-ecs-experiments-service
